@@ -20,7 +20,7 @@ interface AuthRepository {
     fun onVerificationFailed(exception: Exception)
     fun getUserPhone(): String
     fun getUserId(): String
-    fun checkUserExists(onComplete: (Boolean) -> Unit)
+    suspend fun checkUserExists(): Boolean
     suspend fun createAnonymousAccount()
     fun isUserAuthorized(): Boolean
     fun addAuthStateListener(listener: (FirebaseAuth) -> Unit)

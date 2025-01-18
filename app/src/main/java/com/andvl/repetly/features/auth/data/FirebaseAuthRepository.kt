@@ -11,6 +11,8 @@ import com.google.firebase.auth.PhoneAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import com.andvl.repetly.MainActivity
 import com.andvl.repetly.R
+import com.andvl.repetly.features.auth.data.local.dao.UserDao
+import com.andvl.repetly.features.auth.data.local.mapper.toEntity
 import com.andvl.repetly.features.auth.data.model.UserData
 import com.andvl.repetly.features.auth.presentation.viewmodel.AuthState
 import kotlinx.coroutines.Dispatchers
@@ -19,10 +21,13 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.CoroutineScope
 
 class FirebaseAuthRepository @Inject constructor(
     private val auth: FirebaseAuth,
     private val db: FirebaseFirestore,
+    private val userDao: UserDao,
     private val context: MainActivity
 ) : AuthRepository {
     private val TAG = AuthRepository::class.java.simpleName
@@ -174,46 +179,56 @@ class FirebaseAuthRepository @Inject constructor(
         }
     }
 
-    override fun checkUserExists(onComplete: (Boolean) -> Unit) {
+    override suspend fun checkUserExists(): Boolean = withContext(Dispatchers.IO) {
         val currentUser = auth.currentUser
 
-        if (currentUser?.isAnonymous == true) onComplete(true)
-        else {
-            // Пытаемся получить документ с данным UID
-            val uid = currentUser?.uid
-            if (uid != null) {
-                val docRef = db.collection("users").document(uid)
-                docRef.get()
-                    .addOnSuccessListener { document ->
-                        if (document.exists()) {
-                            // Пользователь с данным UID существует
-                            onComplete(true)
-                        } else {
-                            // Пользователь с данным UID не существует
-                            onComplete(false)
-                        }
+        if (currentUser?.isAnonymous == true) {
+            return@withContext true
+        }
+
+        val uid = currentUser?.uid
+        if (uid != null) {
+            // Проверяем кэш (уже в IO потоке)
+            val cachedUser = userDao.getUserById(uid)
+            if (cachedUser != null) {
+                return@withContext true
+            }
+
+            // Если в кэше нет, проверяем Firestore
+            try {
+                val document = db.collection("users").document(uid).get().await()
+                if (document.exists()) {
+                    // Кэшируем данные пользователя
+                    document.toObject(UserData::class.java)?.let { userData ->
+                        userDao.insertUser(userData.toEntity(uid))
                     }
-                    .addOnFailureListener { e ->
-                        // Произошла ошибка при попытке получить документ
-                        Log.d("FIRESTORE", "Error checking user existence: $e")
-                        onComplete(false)
-                    }
-            } else {
-                onComplete(false)
+                    return@withContext true
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error checking user existence: $e")
             }
         }
+        return@withContext false
     }
 
     override suspend fun register(user: UserData) = withContext(Dispatchers.IO) {
         val currentUid = auth.currentUser?.uid
-        val tmpUserData = user.copy(
+        val userData = user.copy(
             phoneNumber = auth.currentUser?.phoneNumber ?: "No number found"
         )
+        
         if (currentUid != null) {
-            val newUserRef = db.collection("users").document(currentUid)
-            newUserRef.set(tmpUserData)
+            try {
+                // Сохраняем в Firestore
+                db.collection("users").document(currentUid).set(userData).await()
+                
+                // Кэшируем локально
+                userDao.insertUser(userData.toEntity(currentUid))
+            } catch (e: Exception) {
+                Log.e(TAG, "Error registering user: $e")
+                throw e
+            }
         }
-        // TODO добавить обработку ошибок
     }
 
     override fun isUserAuthorized(): Boolean {

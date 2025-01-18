@@ -102,7 +102,8 @@ class AuthViewModel @Inject constructor(
 
     fun checkUserExists(onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
-            authService.checkUserExists(onComplete)
+            val exists = authService.checkUserExists()
+            onComplete(exists)
         }
     }
 
