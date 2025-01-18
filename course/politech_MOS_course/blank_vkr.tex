@@ -1,0 +1,1012 @@
+% !TeX TXS-program:bibliography = txs:///biber
+\documentclass[14pt, russian]{scrartcl}
+\let\counterwithout\relax
+\let\counterwithin\relax
+%\usepackage{lmodern}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{extsizes}
+\usepackage{subfig}
+\usepackage[export]{adjustbox}
+\usepackage{tocvsec2} % возможность менять учитываемую глубину разделов в оглавлении
+\usepackage[subfigure]{tocloft}
+\usepackage[newfloat]{minted}
+\captionsetup[listing]{position=top}
+
+\usepackage{fancyvrb}
+\usepackage{ulem,bm,mathrsfs,ifsym} %зачеркивания, особо жирный стиль и RSFS начертание
+\usepackage{sectsty} % переопределение стилей подразделов
+%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% Поля и разметка страницы %%%
+\usepackage{pdflscape}                              % Для включения альбомных страниц
+\usepackage{geometry}                               % Для последующего задания полей
+\geometry{a4paper,tmargin=2cm,bmargin=2cm,lmargin=3cm,rmargin=1cm} % тоже самое, но лучше
+
+%%% Математические пакеты %%%
+\usepackage{amsthm,amsfonts,amsmath,amssymb,amscd}  % Математические дополнения от AMS
+\usepackage{mathtools}                              % Добавляет окружение multlined
+\usepackage[perpage]{footmisc}
+%\usepackage{times}
+
+%%%% Установки для размера шрифта 14 pt %%%%
+%% Формирование переменных и констант для сравнения (один раз для всех подключаемых файлов)%%
+%% должно располагаться до вызова пакета fontspec или polyglossia, потому что они сбивают его работу
+%\newlength{\curtextsize}
+%\newlength{\bigtextsize}
+%\setlength{\bigtextsize}{13pt}
+\KOMAoptions{fontsize=14pt}
+
+\makeatletter
+\def\showfontsize{\f@size{} point}
+\makeatother
+
+%\makeatletter
+%\show\f@size                                       % неплохо для отслеживания, но вызывает стопорение процесса, если документ компилируется без команды  -interaction=nonstopmode 
+%\setlength{\curtextsize}{\f@size pt}
+%\makeatother
+
+%шрифт times
+\usepackage{tempora} %только для тех, у кого MikTeX последней версии и не ловит pscyr
+%\usepackage{pscyr} %для всех нормальных людей
+%\setmainfont[Ligatures={TeX,Historic}]{Times New Roman}
+
+   %%% Решение проблемы копирования текста в буфер кракозябрами
+%    \input glyphtounicode.tex
+%    \input glyphtounicode-cmr.tex %from pdfx package
+%    \pdfgentounicode=1
+    \usepackage{cmap}                               % Улучшенный поиск русских слов в полученном pdf-файле
+    \usepackage[T1]{fontenc}                       % Поддержка русских букв
+    \usepackage[utf8]{inputenc}                     % Кодировка utf8
+    \usepackage[english, main=russian]{babel}            % Языки: русский, английский
+%   \IfFileExists{pscyr.sty}{\usepackage{pscyr}}{}  % Красивые русские шрифты
+%\renewcommand{\rmdefault}{ftm}
+%%% Оформление абзацев %%%
+\usepackage{indentfirst}                            % Красная строка
+%\usepackage{eskdpz}
+
+%%% Таблицы %%%
+\usepackage{longtable}                              % Длинные таблицы
+\usepackage{multirow,makecell,array}                % Улучшенное форматирование таблиц
+\usepackage{booktabs}                               % Возможность оформления таблиц в классическом книжном стиле (при правильном использовании не противоречит ГОСТ)
+
+%%% Общее форматирование
+\usepackage{soulutf8}                               % Поддержка переносоустойчивых подчёркиваний и зачёркиваний
+\usepackage{icomma}                                 % Запятая в десятичных дробях
+
+
+
+%%% Изображения %%%
+\usepackage{graphicx}                               % Подключаем пакет работы с графикой
+\usepackage{wrapfig}
+
+%%% Списки %%%
+\usepackage{enumitem}
+
+%%% Подписи %%%
+\usepackage{caption}                                % Для управления подписями (рисунков и таблиц) % Может управлять номерами рисунков и таблиц с caption %Иногда может управлять заголовками в списках рисунков и таблиц
+%% Использование:
+%\begin{table}[h!]\ContinuedFloat - чтобы не переключать счетчик
+%\captionsetup{labelformat=continued}% должен стоять до самого caption
+%\caption{}
+% либо ручками \caption*{Продолжение таблицы~\ref{...}.} :)
+
+%%% Интервалы %%%
+\addto\captionsrussian{%
+  \renewcommand{\listingname}{Листинг}%
+}
+%%% Счётчики %%%
+\usepackage[figure,table,section]{totalcount}               % Счётчик рисунков и таблиц
+\DeclareTotalCounter{lstlisting}
+\usepackage{totcount}                               % Пакет создания счётчиков на основе последнего номера подсчитываемого элемента (может требовать дважды компилировать документ)
+\usepackage{totpages}                               % Счётчик страниц, совместимый с hyperref (ссылается на номер последней страницы). Желательно ставить последним пакетом в преамбуле
+
+%%% Продвинутое управление групповыми ссылками (пока только формулами) %%%
+%% Кодировки и шрифты %%%
+
+%   \newfontfamily{\cyrillicfont}{Times New Roman}
+%   \newfontfamily{\cyrillicfonttt}{CMU Typewriter Text}
+	%\setmainfont{Times New Roman}
+	%\newfontfamily\cyrillicfont{Times New Roman}
+	%\setsansfont{Times New Roman}                    %% задаёт шрифт без засечек
+%	\setmonofont{Liberation Mono}               %% задаёт моноширинный шрифт
+%    \IfFileExists{pscyr.sty}{\renewcommand{\rmdefault}{ftm}}{}
+%%% Интервалы %%%
+%linespread-реализация ближе к реализации полуторного интервала в ворде.
+%setspace реализация заточена под шрифты 10, 11, 12pt, под остальные кегли хуже, но всё же ближе к типографской классике. 
+\linespread{1.3}                    % Полуторный интервал (ГОСТ Р 7.0.11-2011, 5.3.6)
+%\renewcommand{\@biblabel}[1]{#1}
+
+%%% Гиперссылки %%%
+\usepackage{hyperref}
+
+%%% Выравнивание и переносы %%%
+\sloppy                             % Избавляемся от переполнений
+\clubpenalty=10000                  % Запрещаем разрыв страницы после первой строки абзаца
+\widowpenalty=10000                 % Запрещаем разрыв страницы после последней строки абзаца
+
+\makeatletter % малые заглавные, small caps shape
+\let\@@scshape=\scshape
+\renewcommand{\scshape}{%
+  \ifnum\strcmp{\f@series}{bx}=\z@
+    \usefont{T1}{cmr}{bx}{sc}%
+  \else
+    \ifnum\strcmp{\f@shape}{it}=\z@
+      \fontshape{scsl}\selectfont
+    \else
+      \@@scshape
+    \fi
+  \fi}
+\makeatother
+
+%%% Подписи %%%
+%\captionsetup{%
+%singlelinecheck=off,                % Многострочные подписи, например у таблиц
+%skip=2pt,                           % Вертикальная отбивка между подписью и содержимым рисунка или таблицы определяется ключом
+%justification=centering,            % Центрирование подписей, заданных командой \caption
+%}
+%%%        Подключение пакетов                 %%%
+\usepackage{ifthen}                 % добавляет ifthenelse
+%%% Инициализирование переменных, не трогать!  %%%
+\newcounter{intvl}
+\newcounter{otstup}
+\newcounter{contnumeq}
+\newcounter{contnumfig}
+\newcounter{contnumtab}
+\newcounter{pgnum}
+\newcounter{bibliosel}
+\newcounter{chapstyle}
+\newcounter{headingdelim}
+\newcounter{headingalign}
+\newcounter{headingsize}
+\newcounter{tabcap}
+\newcounter{tablaba}
+\newcounter{tabtita}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% Область упрощённого управления оформлением %%%
+
+%% Интервал между заголовками и между заголовком и текстом
+% Заголовки отделяют от текста сверху и снизу тремя интервалами (ГОСТ Р 7.0.11-2011, 5.3.5)
+\setcounter{intvl}{3}               % Коэффициент кратности к размеру шрифта
+
+%% Отступы у заголовков в тексте
+\setcounter{otstup}{0}              % 0 --- без отступа; 1 --- абзацный отступ
+
+%% Нумерация формул, таблиц и рисунков
+\setcounter{contnumeq}{1}           % Нумерация формул: 0 --- пораздельно (во введении подряд, без номера раздела); 1 --- сквозная нумерация по всей диссертации
+\setcounter{contnumfig}{1}          % Нумерация рисунков: 0 --- пораздельно (во введении подряд, без номера раздела); 1 --- сквозная нумерация по всей диссертации
+\setcounter{contnumtab}{1}          % Нумерация таблиц: 0 --- пораздельно (во введении подряд, без номера раздела); 1 --- сквозная нумерация по всей диссертации
+
+%% Оглавление
+\setcounter{pgnum}{0}               % 0 --- номера страниц никак не обозначены; 1 --- Стр. над номерами страниц (дважды компилировать после изменения)
+
+%% Библиография
+\setcounter{bibliosel}{1}           % 0 --- встроенная реализация с загрузкой файла через движок bibtex8; 1 --- реализация пакетом biblatex через движок biber
+
+%% Текст и форматирование заголовков
+\setcounter{chapstyle}{1}           % 0 --- разделы только под номером; 1 --- разделы с названием "Глава" перед номером
+\setcounter{headingdelim}{1}        % 0 --- номер отделен пропуском в 1em или \quad; 1 --- номера разделов и приложений отделены точкой с пробелом, подразделы пропуском без точки; 2 --- номера разделов, подразделов и приложений отделены точкой с пробелом.
+
+%% Выравнивание заголовков в тексте
+\setcounter{headingalign}{0}        % 0 --- по центру; 1 --- по левому краю
+
+%% Размеры заголовков в тексте
+\setcounter{headingsize}{0}         % 0 --- по ГОСТ, все всегда 14 пт; 1 --- пропорционально изменяющийся размер в зависимости от базового шрифта
+
+%% Подпись таблиц
+\setcounter{tabcap}{0}              % 0 --- по ГОСТ, номер таблицы и название разделены тире, выровнены по левому краю, при необходимости на нескольких строках; 1 --- подпись таблицы не по ГОСТ, на двух и более строках, дальнейшие настройки: 
+%Выравнивание первой строки, с подписью и номером
+\setcounter{tablaba}{2}             % 0 --- по левому краю; 1 --- по центру; 2 --- по правому краю
+%Выравнивание строк с самим названием таблицы
+\setcounter{tabtita}{1}             % 0 --- по левому краю; 1 --- по центру; 2 --- по правому краю
+
+%%% Рисунки %%%
+\DeclareCaptionLabelSeparator*{emdash}{~--- }             % (ГОСТ 2.105, 4.3.1)
+\captionsetup[figure]{labelsep=emdash,font=onehalfspacing,position=bottom}
+
+%%% Таблицы %%%
+\ifthenelse{\equal{\thetabcap}{0}}{%
+    \newcommand{\tabcapalign}{\raggedright}  % по левому краю страницы или аналога parbox
+}
+
+\ifthenelse{\equal{\thetablaba}{0} \AND \equal{\thetabcap}{1}}{%
+    \newcommand{\tabcapalign}{\raggedright}  % по левому краю страницы или аналога parbox
+}
+
+\ifthenelse{\equal{\thetablaba}{1} \AND \equal{\thetabcap}{1}}{%
+    \newcommand{\tabcapalign}{\centering}    % по центру страницы или аналога parbox
+}
+
+\ifthenelse{\equal{\thetablaba}{2} \AND \equal{\thetabcap}{1}}{%
+    \newcommand{\tabcapalign}{\raggedleft}   % по правому краю страницы или аналога parbox
+}
+
+\ifthenelse{\equal{\thetabtita}{0} \AND \equal{\thetabcap}{1}}{%
+    \newcommand{\tabtitalign}{\raggedright}  % по левому краю страницы или аналога parbox
+}
+
+\ifthenelse{\equal{\thetabtita}{1} \AND \equal{\thetabcap}{1}}{%
+    \newcommand{\tabtitalign}{\centering}    % по центру страницы или аналога parbox
+}
+
+\ifthenelse{\equal{\thetabtita}{2} \AND \equal{\thetabcap}{1}}{%
+    \newcommand{\tabtitalign}{\raggedleft}   % по правому краю страницы или аналога parbox
+}
+
+\DeclareCaptionFormat{tablenocaption}{\tabcapalign #1\strut}        % Наименование таблицы отсутствует
+\ifthenelse{\equal{\thetabcap}{0}}{%
+    \DeclareCaptionFormat{tablecaption}{\tabcapalign #1#2#3}
+    \captionsetup[table]{labelsep=emdash}                       % тире как разделитель идентификатора с номером от наименования
+}{%
+    \DeclareCaptionFormat{tablecaption}{\tabcapalign #1#2\par%  % Идентификатор таблицы на отдельной строке
+        \tabtitalign{#3}}                                       % Наименование таблицы строкой ниже
+    \captionsetup[table]{labelsep=space}                        % пробельный разделитель идентификатора с номером от наименования
+}
+\captionsetup[table]{format=tablecaption,singlelinecheck=off,font=onehalfspacing,position=top,skip=-5pt}  % многострочные наименования и прочее
+\DeclareCaptionLabelFormat{continued}{Продолжение таблицы~#2}
+\setlength{\belowcaptionskip}{.2cm}
+\setlength{\intextsep}{0ex}
+
+%%% Подписи подрисунков %%%
+\renewcommand{\thesubfigure}{\asbuk{subfigure}}           % Буквенные номера подрисунков
+\captionsetup[subfigure]{font={normalsize},               % Шрифт подписи названий подрисунков (не отличается от основного)
+    labelformat=brace,                                    % Формат обозначения подрисунка
+    justification=centering,                              % Выключка подписей (форматирование), один из вариантов            
+}
+%\DeclareCaptionFont{font12pt}{\fontsize{12pt}{13pt}\selectfont} % объявляем шрифт 12pt для использования в подписях, тут же надо интерлиньяж объявлять, если не наследуется
+%\captionsetup[subfigure]{font={font12pt}}                 % Шрифт подписи названий подрисунков (всегда 12pt)
+
+%%% Настройки гиперссылок %%%
+
+\definecolor{linkcolor}{rgb}{0.0,0,0}
+\definecolor{citecolor}{rgb}{0,0.0,0}
+\definecolor{urlcolor}{rgb}{0,0,0}
+
+\hypersetup{
+    linktocpage=true,           % ссылки с номера страницы в оглавлении, списке таблиц и списке рисунков
+%    linktoc=all,                % both the section and page part are links
+%    pdfpagelabels=false,        % set PDF page labels (true|false)
+    plainpages=true,           % Forces page anchors to be named by the Arabic form  of the page number, rather than the formatted form
+    colorlinks,                 % ссылки отображаются раскрашенным текстом, а не раскрашенным прямоугольником, вокруг текста
+    linkcolor={linkcolor},      % цвет ссылок типа ref, eqref и подобных
+    citecolor={citecolor},      % цвет ссылок-цитат
+    urlcolor={urlcolor},        % цвет гиперссылок
+    pdflang={ru},
+}
+\urlstyle{same}
+%%% Шаблон %%%
+%\DeclareRobustCommand{\todo}{\textcolor{red}}       % решаем проблему превращения названия цвета в результате \MakeUppercase, http://tex.stackexchange.com/a/187930/79756 , \DeclareRobustCommand protects \todo from expanding inside \MakeUppercase
+\setlength{\parindent}{2.5em}                       % Абзацный отступ. Должен быть одинаковым по всему тексту и равен пяти знакам (ГОСТ Р 7.0.11-2011, 5.3.7).
+
+%%% Списки %%%
+% Используем дефис для ненумерованных списков (ГОСТ 2.105-95, 4.1.7)
+%\renewcommand{\labelitemi}{\normalfont\bfseries~{---}} 
+\renewcommand{\labelitemi}{\bfseries~{---}} 
+\setlist{nosep,%                                    % Единый стиль для всех списков (пакет enumitem), без дополнительных интервалов.
+    labelindent=\parindent,leftmargin=*%            % Каждый пункт, подпункт и перечисление записывают с абзацного отступа (ГОСТ 2.105-95, 4.1.8)
+}
+%%%%%%%%%%%%%%%%%%%%%%
+%\usepackage{xltxtra} % load xunicode
+
+\usepackage{ragged2e}
+\usepackage[explicit]{titlesec}
+\usepackage{placeins}
+\usepackage{xparse}
+\usepackage{csquotes}
+
+\usepackage{listingsutf8}
+\usepackage{url} %пакеты расширений
+\usepackage{algorithm, algorithmicx}
+\usepackage[noend]{algpseudocode}
+\usepackage{blkarray}
+\usepackage{chngcntr}
+\usepackage{tabularx}
+\usepackage[backend=biber, 
+    bibstyle=gost-numeric,
+    citestyle=nature]{biblatex}
+\newcommand*\template[1]{\text{<}#1\text{>}}
+\addbibresource{biblio.bib}
+  
+\titleformat{name=\section,numberless}[block]{\normalfont\large\centering}{}{0em}{#1}
+\titleformat{\section}[block]{\normalfont\large\bfseries\raggedright}{}{0em}{\thesection\hspace{0.25em}#1}
+\titleformat{\subsection}[block]{\normalfont\large\bfseries\raggedright}{}{0em}{\thesubsection\hspace{0.25em}#1}
+\titleformat{\subsubsection}[block]{\normalfont\large\bfseries\raggedright}{}{0em}{\thesubsubsection\hspace{0.25em}#1}
+
+\let\Algorithm\algorithm
+\renewcommand\algorithm[1][]{\Algorithm[#1]\setstretch{1.5}}
+%\renewcommand{\listingscaption}{Листинг}
+
+\usepackage{pifont}
+\usepackage{calc}
+\usepackage{suffix}
+\usepackage{csquotes}
+\DeclareQuoteStyle{russian}
+    {\guillemotleft}{\guillemotright}[0.025em]
+    {\quotedblbase}{\textquotedblleft}
+\ExecuteQuoteOptions{style=russian}
+\newcommand{\enq}[1]{\enquote{#1}}  
+\newcommand{\eng}[1]{\begin{english}#1\end{english}}
+% Подчиненные счетчики в окружениях http://old.kpfu.ru/journals/izv_vuz/arch/sample1251.tex
+\newcounter{cTheorem} 
+\newcounter{cDefinition}
+\newcounter{cConsequent}
+\newcounter{cExample}
+\newcounter{cLemma}
+\newcounter{cConjecture}
+\newtheorem{Theorem}{Теорема}[cTheorem]
+\newtheorem{Definition}{Определение}[cDefinition]
+\newtheorem{Consequent}{Следствие}[cConsequent]
+\newtheorem{Example}{Пример}[cExample]
+\newtheorem{Lemma}{Лемма}[cLemma]
+\newtheorem{Conjecture}{Гипотеза}[cConjecture]
+
+\renewcommand{\theTheorem}{\arabic{Theorem}}
+\renewcommand{\theDefinition}{\arabic{Definition}}
+\renewcommand{\theConsequent}{\arabic{Consequent}}
+\renewcommand{\theExample}{\arabic{Example}}
+\renewcommand{\theLemma}{\arabic{Lemma}}
+\renewcommand{\theConjecture}{\arabic{Conjecture}}
+%\makeatletter
+\NewDocumentCommand{\Newline}{}{\text{\\}}
+\newcommand{\sequence}[2]{\ensuremath \left(#1,\ \dots,\ #2\right)}
+
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\renewcommand{\listalgorithmname}{Список алгоритмов}
+\floatname{algorithm}{Листинг}
+\renewcommand{\lstlistingname}{Листинг}
+\renewcommand{\thealgorithm}{\arabic{algorithm}}
+
+\newcommand{\refAlgo}[1]{(листинг \ref{#1})}
+\newcommand{\refImage}[1]{(рисунок \ref{#1})}
+
+\renewcommand{\theenumi}{\arabic{enumi}.}% Меняем везде перечисления на цифра.цифра	
+\renewcommand{\labelenumi}{\arabic{enumi}.}% Меняем везде перечисления на цифра.цифра
+\renewcommand{\theenumii}{\arabic{enumii}}% Меняем везде перечисления на цифра.цифра
+\renewcommand{\labelenumii}{(\arabic{enumii})}% Меняем везде перечисления на цифра.цифра
+\renewcommand{\theenumiii}{\roman{enumiii}}% Меняем везде перечисления на цифра.цифра
+\renewcommand{\labelenumiii}{(\roman{enumiii})}% Меняем везде перечисления на цифра.цифра
+%\newfontfamily\AnkaCoder[Path=src/fonts/]{AnkaCoder-r.ttf}
+\renewcommand{\labelitemi}{---}
+\renewcommand{\labelitemii}{---}
+
+%\usepackage{courier}
+
+\makeatletter
+\def\p@subsection{}
+\def\p@subsubsection{\thesection\,\thesubsection\,}
+\makeatother
+\newcommand{\prog}[1]{{\ttfamily\small#1}}
+
+\newcommand{\anonsection}[1]{\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{section}{\protect\numberline{}#1}
+\section*{#1}\vspace*{2.5ex} % По госту положены 3 пустые строки после заголовка ненумеруемого раздела
+}
+\newcommand{\sectionbreak}{\clearpage}
+\renewcommand{\sectionfont}{\normalsize} % Сбиваем стиль оглавления в стандартный
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}} % Точки в оглавлении напротив разделов
+
+\renewcommand{\cftsecfont}{\normalfont\large} % Переключение на times в содержании
+\renewcommand{\cftsubsecfont}{\normalfont\large} % Переключение на times в содержании
+
+\usepackage{caption} 
+%\captionsetup[table]{justification=raggedleft} 
+%\captionsetup[figure]{justification=centering,labelsep=endash}
+\usepackage{amsmath}    % \bar    (матрицы и проч. ...)
+\usepackage{amsfonts}   % \mathbb (символ для множества действительных чисел и проч. ...)
+\usepackage{mathtools}  % \abs, \norm
+    \DeclarePairedDelimiter\abs{\lvert}{\rvert} % операция модуля
+    \DeclarePairedDelimiter\norm{\lVert}{\rVert} % операция нормы
+\DeclareTextCommandDefault{\textvisiblespace}{%
+  \mbox{\kern.06em\vrule \@height.3ex}%
+  \vbox{\hrule \@width.3em}%
+  \hbox{\vrule \@height.3ex}}    
+\newsavebox{\spacebox}
+\begin{lrbox}{\spacebox}
+\verb*! !
+\end{lrbox}
+\newcommand{\aspace}{\usebox{\spacebox}}
+\DeclareTotalCounter{listing}
+
+\makeatletter
+\renewcommand*{\p@subsubsection}{}
+\makeatother
+
+\newenvironment{longlisting}{\captionsetup{type=listing}}{}
+
+\begin{document}
+\sloppy
+
+\begin{titlepage}
+\begin{center}
+
+{\large \textbf{ФЕДЕРАЛЬНОЕ ГОСУДАРСТВЕННОЕ АВТОНОМНОЕ}}\\[0.3cm]
+{\large \textbf{ОБРАЗОВАТЕЛЬНОЕ УЧРЕЖДЕНИЕ ВЫСШЕГО ОБРАЗОВАНИЯ}}\\[0.5cm]
+
+\includegraphics[width=0.2\textwidth]{emblem.png}\\[0.5cm]
+
+{\large \textbf{МОСКОВСКИЙ ПОЛИТЕХНИЧЕСКИЙ УНИВЕРСИТЕТ}}\\[0.5cm]
+
+{\large Факультет информационных технологий}\\[0.3cm]
+{\large Кафедра Информатики и информационных технологий}\\[1cm]
+
+{\large направление подготовки 09.04.02 «Информационные системы и}\\
+{\large технологии»,}\\[0.3cm]
+{\large профиль «Мобильные технологии»}\\[2cm]
+
+{\Large \textbf{КУРСОВАЯ РАБОТА}}\\[1cm]
+
+{\large \textbf{Дисциплина:} «Мобильные операционные системы»}\\[3cm]
+
+\end{center}
+
+\begin{flushright}
+\begin{tabular}{ll}
+{\large \textbf{Выполнил:} студент группы 211-362}\\
+{\large Владиславов А.А.}\\[0.5cm]
+{\large \textbf{Дата, подпись} \rule{5cm}{0.4pt} \rule{5cm}{0.4pt}}\\
+{\scriptsize \hspace*{7.5cm}(Дата) \hspace{3.5cm}(Подпись)}\\[1cm]
+{\large \textbf{Проверил:} к.т.н., доцент}\\
+{\large Кузнецов И.А.}\\[0.5cm]
+{\large \textbf{Дата, подпись} \rule{5cm}{0.4pt} \rule{5cm}{0.4pt}}\\
+{\scriptsize \hspace*{7.5cm}(Дата) \hspace{3.5cm}(Подпись)}\\[0.3cm]
+{\large \hspace*{11cm}(Оценка)}
+\end{tabular}
+\end{flushright}
+
+\vspace{1cm}
+{\large \textbf{Замечания:}}\\[0.3cm]
+\rule{\textwidth}{0.4pt}\\[0.3cm]
+\rule{\textwidth}{0.4pt}
+
+\vfill
+
+\begin{center}
+{\large \textbf{Москва}}\\
+{\large \textbf{2024}}
+\end{center}
+
+\end{titlepage}
+%\renewcommand{\ttdefault}{pcr}
+
+\setlength{\tabcolsep}{3pt}
+\newpage
+\setcounter{page}{2}
+%----------------------------------------------------------------------------
+%                  ОТСЮДА --- СОБСТВЕННО ТЕКСТ
+%----------------------------------------------------------------------------
+\renewcommand\contentsname{\hfill{\normalfont{СОДЕРЖАНИЕ}}\hfill}  %Оглавление
+\tableofcontents
+\newpage
+\anonsection{ВВЕДЕНИЕ}  %Введение
+
+Введение
+
+\section{Разработка базового мобильного приложения}\label{sect:development}
+
+\subsection{Техническое задание}\label{sect:requirements}
+
+Цель разработки проекта – создание мобильного приложения для платформы Android, предназначенного для поиска и взаимодействия между репетиторами и учениками. Приложение призвано упростить процесс поиска подходящего репетитора или ученика, организации занятий и отслеживания прогресса обучения.
+
+Основные задачи проекта:
+
+1. Реализация системы профилей пользователей.
+   \begin{itemize}
+   \item Создание профиля репетитора с указанием предметов, опыта, стоимости занятий
+   \item Создание профиля ученика с указанием интересующих предметов и целей обучения
+   \item Возможность добавления портфолио и отзывов
+   \end{itemize}
+
+2. Разработка системы поиска и подбора.
+   \begin{itemize}
+   \item Поиск репетиторов по предметам, стоимости, рейтингу
+   \item Поиск учеников по предметам и целям обучения
+   \item Фильтрация по местоположению и формату занятий (онлайн/офлайн)
+   \item Система рекомендаций на основе предпочтений пользователя
+   \end{itemize}
+
+3. Организация взаимодействия между пользователями.
+   \begin{itemize}
+   \item Система сообщений для общения
+   \item Планирование и управление расписанием занятий
+   \item Отслеживание прогресса обучения
+   \item Система оценок и отзывов
+   \end{itemize}
+
+4. Обеспечение безопасности и надежности.
+   \begin{itemize}
+   \item Верификация профилей пользователей
+   \item Защита персональных данных
+   \item Безопасная система оплаты
+   \item Разрешение спорных ситуаций
+   \end{itemize}
+
+Эти функции делают приложение полезным инструментом для всех, кто стремится к эффективному управлению своим временем и задачами.
+
+В рамках первого этапа было разработано мобильное приложение для управления повторяющимися задачами (Repetly). Приложение позволяет пользователям создавать, отслеживать и управлять регулярными задачами, получая уведомления о необходимости их выполнения.
+
+\subsection{Архитектура приложения}\label{sect:architecture}
+
+Приложение разработано с использованием современного стека технологий Android и следует принципам Clean Architecture. Основные технологические решения включают:
+
+\begin{itemize}
+\item Язык программирования Kotlin
+\item Архитектурный паттерн MVVM (Model-View-ViewModel)
+\item Jetpack Compose для построения пользовательского интерфейса
+\item Room для работы с локальной базой данных
+\item Hilt для внедрения зависимостей
+\item WorkManager для управления фоновыми задачами
+\item Firebase для аутентификации и облачного хранения
+\end{itemize}
+
+\subsection{Реализация базы данных}\label{sect:database}
+
+Для работы с локальными данными используется Room. Архитектура базы данных построена с учетом необходимости кэширования и периодической очистки устаревших данных.
+
+\begin{listing}[!htb]
+\caption{Определение DAO для работы с пользователями}
+\label{lst:user-dao}
+\begin{minted}[frame=single,fontsize = \footnotesize, linenos, xleftmargin = 1.5em]{kotlin}
+@Dao
+interface UserDao {
+    @Query("SELECT * FROM users WHERE uid = :uid")
+    suspend fun getUserById(uid: String): UserEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertUser(user: UserEntity)
+
+    @Query("DELETE FROM users WHERE createdAt < :timestamp")
+    suspend fun deleteOldUsers(timestamp: Long)
+}
+\end{minted}
+\end{listing}
+
+Для обеспечения эффективного использования памяти устройства реализован механизм автоматической очистки устаревших данных с использованием WorkManager (см. листинг~\ref{lst:worker}). Этот подход позволяет надежно планировать и выполнять фоновые задачи, которые продолжат работать даже после перезапуска устройства. Планирование очистки кэша осуществляется через специальный сервис (см. листинг~\ref{lst:cache-service}), который запускается при старте приложения.
+
+\begin{listing}[!htb]
+\caption{Сервис управления кэшем}
+\label{lst:cache-service}
+\begin{minted}[frame=single,fontsize = \footnotesize, linenos, xleftmargin = 1.5em]{kotlin}
+@Singleton
+class CacheMaintenanceService @Inject constructor(
+    private val workManager: WorkManager
+) {
+    fun scheduleCacheCleanup() {
+        val cleanupRequest = PeriodicWorkRequestBuilder<CacheCleanupWorker>(
+            repeatInterval = 1,
+            repeatIntervalTimeUnit = TimeUnit.DAYS
+        ).build()
+
+        workManager.enqueueUniquePeriodicWork(
+            CACHE_CLEANUP_WORK_NAME,
+            ExistingPeriodicWorkPolicy.KEEP,
+            cleanupRequest
+        )
+    }
+
+    companion object {
+        private const val CACHE_CLEANUP_WORK_NAME = "cache_cleanup_work"
+    }
+}
+\end{minted}
+\end{listing}
+
+\begin{listing}[!htb]
+\caption{Реализация Worker'а для очистки кэша}
+\label{lst:worker}
+\begin{minted}[frame=single,fontsize = \footnotesize, linenos, xleftmargin = 1.5em]{kotlin}
+@HiltWorker
+class CacheCleanupWorker @AssistedInject constructor(
+    @Assisted appContext: Context,
+    @Assisted workerParams: WorkerParameters,
+    private val userDao: UserDao
+) : CoroutineWorker(appContext, workerParams) {
+
+    override suspend fun doWork(): Result {
+        return try {
+            val oldTimestamp = System.currentTimeMillis() - CACHE_EXPIRATION
+            userDao.deleteOldUsers(oldTimestamp)
+            Result.success()
+        } catch (e: Exception) {
+            Result.retry()
+        }
+    }
+
+    companion object {
+        private const val CACHE_EXPIRATION = 7L * 24 * 60 * 60 * 1000 // 7 дней
+    }
+}
+\end{minted}
+\end{listing}
+
+\subsection{Система уведомлений и обратной связи}\label{sect:notifications}
+
+В рамках разработки приложения было принято решение использовать встроенные механизмы обратной связи вместо системных push-уведомлений. Это решение обусловлено тем, что Firebase Cloud Messaging, который изначально планировался для отправки уведомлений, больше не поддерживает выполнение пользовательских скриптов для отправки push-уведомлений в бесплатном режиме.
+
+Вместо этого в приложении реализована система внутренних уведомлений, включающая:
+
+\begin{itemize}
+\item Snackbar для кратковременных сообщений об успешных действиях
+\item Dialog для важных сообщений, требующих внимания пользователя
+\item BottomSheet для отображения дополнительной информации
+\end{itemize}
+
+Пример реализации компонента для отображения сообщений (см. листинг~\ref{lst:snackbar}):
+
+\begin{listing}[!htb]
+\caption{Реализация компонента для отображения Snackbar}
+\label{lst:snackbar}
+\begin{minted}[frame=single,fontsize = \footnotesize, linenos, xleftmargin = 1.5em]{kotlin}
+@Composable
+fun MessageHost(
+    snackbarHostState: SnackbarHostState,
+    modifier: Modifier = Modifier
+) {
+    SnackbarHost(
+        hostState = snackbarHostState,
+        modifier = modifier,
+        snackbar = { data ->
+            Snackbar(
+                modifier = Modifier.padding(16.dp),
+                content = {
+                    Text(
+                        text = data.message,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                },
+                action = data.actionLabel?.let {
+                    {
+                        TextButton(onClick = { data.performAction() }) {
+                            Text(text = data.actionLabel)
+                        }
+                    }
+                }
+            )
+        }
+    )
+}
+\end{minted}
+\end{listing}
+
+Для управления фоновыми задачами и периодической очистки кэша используется WorkManager (см. листинг~\ref{lst:worker}), который обеспечивает надежное выполнение запланированных операций даже после перезапуска устройства.
+
+\subsection{Пользовательский интерфейс}\label{sect:ui}
+
+Пользовательский интерфейс реализован с использованием современного инструментария Jetpack Compose, который представляет собой декларативный фреймворк для создания пользовательских интерфейсов. По сравнению с традиционным подходом на основе View, Jetpack Compose предоставляет ряд существенных преимуществ:
+
+\begin{itemize}
+\item \textbf{Меньше кода}: Compose позволяет создавать сложные интерфейсы с меньшим количеством кода по сравнению с XML-разметкой. Например, создание списка с пользовательской анимацией в XML потребовало бы нескольких файлов разметки и адаптеров, тогда как в Compose это можно сделать в одной функции.
+
+\item \textbf{Типобезопасность}: В отличие от XML, где ошибки обнаруживаются только во время выполнения, Compose обеспечивает проверку типов на этапе компиляции.
+
+\item \textbf{Встроенный предпросмотр}: Возможность видеть результат изменений UI в реальном времени без запуска приложения через аннотацию @Preview.
+
+\item \textbf{Улучшенная производительность}: Compose использует эффективный механизм перерисовки, обновляя только те компоненты, которые действительно изменились.
+
+\item \textbf{Легкость тестирования}: Компоненты Compose легко тестировать благодаря их функциональной природе и предсказуемому поведению.
+\end{itemize}
+
+Основные экраны приложения включают:
+
+\begin{itemize}
+\item Экран авторизации
+\item Главный экран со списком задач
+\item Экран создания/редактирования задачи
+\item Экран настроек
+\end{itemize}
+
+\textbf{Здесь нужен скриншот главного экрана приложения}
+
+Для навигации между экранами используется Compose Navigation (см. листинг~\ref{lst:navigation}):
+
+\begin{listing}[!htb]
+\caption{Определение навигации в приложении}
+\label{lst:navigation}
+\begin{minted}[frame=single,fontsize = \footnotesize, linenos, xleftmargin = 1.5em]{kotlin}
+@Composable
+fun AppNavigation() {
+    val navController = rememberNavController()
+    
+    NavHost(
+        navController = navController,
+        startDestination = "auth"
+    ) {
+        composable("auth") { AuthScreen(navController) }
+        composable("main") { MainScreen(navController) }
+        composable("task/{taskId}") { backStackEntry ->
+            val taskId = backStackEntry.arguments?.getString("taskId")
+            TaskScreen(taskId, navController)
+        }
+        composable("settings") { SettingsScreen(navController) }
+    }
+}
+\end{minted}
+\end{listing}
+
+\subsection{Внедрение зависимостей}\label{sect:di}
+
+Для управления зависимостями в приложении используется Hilt - библиотека для внедрения зависимостей, построенная на основе Dagger. Выбор Hilt обусловлен несколькими факторами:
+
+\begin{itemize}
+\item По сравнению с базовым Dagger 2:
+  \begin{itemize}
+  \item Значительно упрощенный синтаксис
+  \item Предопределенные скоупы для Android компонентов
+  \item Меньше шаблонного кода
+  \item Встроенная поддержка WorkManager и Navigation
+  \end{itemize}
+\item По сравнению с Koin:
+  \begin{itemize}
+  \item Проверка зависимостей на этапе компиляции
+  \item Лучшая производительность благодаря кодогенерации
+  \item Более надежная работа с большими проектами
+  \item Официальная поддержка от Google
+  \end{itemize}
+\end{itemize}
+
+Рассмотрим основные компоненты системы внедрения зависимостей. В листинге~\ref{lst:hilt-application} показана реализация базового класса приложения:
+
+\begin{listing}[!htb]
+\caption{Определение Application класса с поддержкой Hilt}
+\label{lst:hilt-application}
+\begin{minted}[frame=single,fontsize = \footnotesize, linenos, xleftmargin = 1.5em]{kotlin}
+@HiltAndroidApp
+class RepetlyApplication : Application() {
+    @Inject
+    lateinit var cacheMaintenanceService: CacheMaintenanceService
+
+    override fun onCreate() {
+        super.onCreate()
+        cacheMaintenanceService.scheduleCacheCleanup()
+    }
+}
+\end{minted}
+\end{listing}
+
+Для различных компонентов приложения созданы специализированные модули. Пример модуля для работы с аутентификацией показан в листинге~\ref{lst:auth-module}:
+
+\begin{listing}[!htb]
+\caption{Модуль для работы с Firebase Authentication}
+\label{lst:auth-module}
+\begin{minted}[frame=single,fontsize = \footnotesize, linenos, xleftmargin = 1.5em]{kotlin}
+@Module
+@InstallIn(SingletonComponent::class)
+object AuthModule {
+    @Provides
+    @Singleton
+    fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
+
+    @Provides
+    @Singleton
+    fun provideAuthRepository(
+        firebaseAuth: FirebaseAuth,
+        userDao: UserDao
+    ): AuthRepository = FirebaseAuthRepository(firebaseAuth, userDao)
+}
+\end{minted}
+\end{listing}
+
+Для управления фоновыми задачами создан специальный модуль инициализации WorkManager (см. листинг~\ref{lst:worker-module}):
+
+\begin{listing}[!htb]
+\caption{Модуль инициализации WorkManager}
+\label{lst:worker-module}
+\begin{minted}[frame=single,fontsize = \footnotesize, linenos, xleftmargin = 1.5em]{kotlin}
+@Module
+@InstallIn(SingletonComponent::class)
+object WorkManagerInitializer {
+    @Provides
+    @Singleton
+    fun provideWorkManagerConfiguration(
+        workerFactory: HiltWorkerFactory
+    ): Configuration {
+        return Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .setMinimumLoggingLevel(android.util.Log.INFO)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideWorkManager(
+        @ApplicationContext context: Context,
+        configuration: Configuration
+    ): WorkManager {
+        WorkManager.initialize(context, configuration)
+        return WorkManager.getInstance(context)
+    }
+}
+\end{minted}
+\end{listing}
+
+Такая организация кода позволяет:
+\begin{itemize}
+\item Легко тестировать компоненты благодаря возможности подмены зависимостей
+\item Избежать сильной связанности между модулями
+\item Централизованно управлять жизненным циклом объектов
+\item Автоматически внедрять зависимости в Android компоненты
+\end{itemize}
+
+\subsection{Результаты разработки}\label{sect:results}
+
+В результате первого этапа разработки было создано базовое мобильное приложение, которое включает:
+
+\begin{itemize}
+\item Систему аутентификации пользователей
+\item Локальное хранение данных с использованием Room
+\item Систему уведомлений на основе WorkManager
+\item Современный пользовательский интерфейс на Jetpack Compose
+\item Архитектуру, основанную на лучших практиках Android-разработки
+\end{itemize}
+
+\textbf{Здесь нужен скриншот работающего приложения с основными экранами}
+
+Приложение соответствует всем минимальным требованиям и готово к дальнейшему расширению функциональности.
+
+\section{Руководство пользователя}
+
+Часть 2
+
+\subsection{Пример перечисления}
+
+\textbf{Android:}
+\begin{itemize}
+\item Android Studio или IntelliJ IDEA, последней стабильной версии.
+\item Java Development Kit (JDK) 11.
+\item Android SDK.
+\end{itemize}
+
+\textbf{Desktop (Kotlin/JVM):}
+\begin{itemize}
+\item JDK 11 или новее.
+\item Android Studio или IntelliJ IDEA.
+\end{itemize}
+
+\textbf{iOS:}
+\begin{itemize}
+\item Xcode 14.3 или новее. Требуется операционная система macOS Ventura 13.0 или новее.
+\end{itemize}
+
+\textbf{Общие требования:}
+\begin{itemize}
+\item Kotlin Multiplatform Mobile (KMM) Plugin для Android Studio или IntelliJ IDEA.
+\item Gradle (версия, указанная в проекте KMM).
+\end{itemize}
+
+\textbf{Примечание:}
+При разработке для Android и iOS на Windows или Linux, вам может потребоваться использовать решения виртуализации для запуска и тестирования iOS приложений, такие как MacStadium или GitHub Actions.
+
+\textbf{Примечание 2:}
+Работоспособность Desktop приложения проверялась только на Windows и macOS. Возможность запуска приложения на Linux --- под вопросом.
+
+\subsection{Итог запуска И ПРИМЕР КАРТИНКИ}
+
+На рисунке~\ref{fig:run} приведен результат запуска приложения на платформах iOS, Android и Desktop соответственно.
+
+\begin{figure}[!htb]
+\centering
+  \includegraphics[width=0.5\textwidth]{Blanks-4LaTeX-main/run.png}
+\caption{Результат запуска на iOS, Android, Desktop}
+\label{fig:run}
+\end{figure}
+
+\anonsection{ЗАКЛЮЧЕНИЕ} 
+
+Анонимное заключение
+
+
+\renewcommand\refname{СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ}
+% Список литературы
+\clearpage
+%\bibliographystyle{ugost2008s}  %utf8gost71u.bst} %utf8gost705u} %gost2008s}
+{\catcode`"\active\def"{\relax}
+\addcontentsline{toc}{section}{\protect\numberline{}\refname}%
+%\bibliography{biblio} %здесь ничего не меняем, кроме, возможно, имени bib-файла
+\printbibliography
+}
+\newpage
+\settocdepth{section}
+
+\anonsection{ПРИЛОЖЕНИЕ А}\label{sect:appl-a}
+
+\vspace{-20pt}
+
+\begin{longlisting}
+\caption{Файл build.gradle.kts файл umbrella модуля.}
+\label{lst:umbrella-build-gradle}
+\begin{minted}[frame=single,fontsize = \footnotesize, linenos, xleftmargin = 1.5em,breaklines]{kotlin}
+plugins {
+    id("mp-compose-setup")
+    id("android-setup")
+    kotlin("native.cocoapods")
+}
+version = "0.0.1"
+kotlin {
+    cocoapods {
+        summary = "MPP iOS SDK + Compose"
+        homepage = "https://google.com"
+        ios.deploymentTarget = "14.0"
+        podfile = project.file("../../apps/iosApp/Podfile")
+        framework {
+            transitiveExport = false
+            isStatic = true
+            baseName = "shared_compose"
+            freeCompilerArgs += "-Xbinary=bundleId=ru.andvl.mppapp"
+            export(projects.common.core)
+            export(projects.common.coreUtils)
+            export(projects.common.coreCompose)
+            export(projects.common.auth.data)
+            export(projects.common.main.compose)
+            export(projects.common.list.data)
+            export(projects.common.list.compose)
+            export(projects.common.umbrellaCore)
+        }
+    }
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation(projects.common.core)
+                implementation(projects.common.coreUtils)
+                implementation(projects.common.coreCompose)
+
+                implementation(projects.common.auth.data)
+
+                implementation(projects.common.main.compose)
+
+                implementation(projects.common.list.data)
+                implementation(projects.common.list.compose)
+
+                implementation(projects.common.umbrellaCore)
+
+                implementation(libs.kViewModel.core)
+                implementation(libs.kViewModel.compose)
+                implementation(libs.kViewModel.odyssey)
+
+                implementation(libs.odyssey.core)
+                implementation(libs.odyssey.compose)
+            }
+        }
+        androidMain {
+            dependencies {
+                implementation(project.dependencies.platform(
+                    libs.androidx.compose.bom
+                ))
+                implementation(libs.compose.activity)
+            }
+        }
+        iosMain {
+            dependencies {
+                api(projects.common.core)
+                api(projects.common.coreUtils)
+                api(projects.common.coreCompose)
+                api(projects.common.auth.data)
+                api(projects.common.main.compose)
+                api(projects.common.list.data)
+                api(projects.common.list.compose)
+                api(projects.common.umbrellaCore)
+            }
+        }
+    }
+}
+\end{minted}
+\end{longlisting}
+
+\newpage
+\settocdepth{section}
+
+\anonsection{ПРИЛОЖЕНИЕ В}\label{sect:appl-v}
+
+\vspace{-20pt}
+
+\begin{figure}[!htb]
+\centering
+  \includegraphics[width=0.5\textwidth]{Blanks-4LaTeX-main/structure.png}
+\caption{Структура проекта.}
+\label{fig:project-structure}
+\end{figure}
+
+\end{document}
+
