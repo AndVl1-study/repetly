@@ -20,6 +20,13 @@ junit = "4.13.2"
 mockito = "5.3.1"
 turbine = "1.0.0"
 room-gradle = "2.6.1"
+benchmark = "1.2.2"
+test-core = "1.5.0"
+test-ext = "1.1.5"
+test-espresso = "3.5.1"
+test-uiautomator = "2.3.0"
+startup = "1.1.1"
+collections-immutable = "0.3.7"
 
 [libraries]
 # AndroidX
@@ -73,6 +80,19 @@ mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mo
 mockito-kotlin = { group = "org.mockito.kotlin", name = "mockito-kotlin", version.ref = "mockito" }
 coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version = "1.7.1" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
+
+# Benchmark
+androidx-benchmark-macro = { module = "androidx.benchmark:benchmark-macro-junit4", version.ref = "benchmark" }
+androidx-startup = { module = "androidx.startup:startup-runtime", version.ref = "startup" }
+
+# Testing
+androidx-test-core = { group = "androidx.test", name = "core", version.ref = "test-core" }
+androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "test-ext" }
+androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "test-espresso" }
+androidx-test-uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "test-uiautomator" }
+
+# Other
+kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "collections-immutable" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

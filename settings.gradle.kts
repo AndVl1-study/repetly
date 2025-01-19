@@ -15,3 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "repetly"
 include(":app")
+include(":benchmarks")

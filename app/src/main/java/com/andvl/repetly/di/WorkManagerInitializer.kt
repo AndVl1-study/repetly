@@ -1,9 +1,11 @@
 package com.andvl.repetly.di
 
 import android.content.Context
+import android.util.Log
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import androidx.work.WorkManager
+import com.andvl.repetly.BuildConfig
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,7 +23,8 @@ object WorkManagerInitializer {
     ): Configuration {
         return Configuration.Builder()
             .setWorkerFactory(workerFactory)
-            .setMinimumLoggingLevel(android.util.Log.INFO)
+            .setMinimumLoggingLevel(if (BuildConfig.DEBUG) Log.DEBUG else Log.ERROR)
+            .setMaxSchedulerLimit(2)
             .build()
     }
 

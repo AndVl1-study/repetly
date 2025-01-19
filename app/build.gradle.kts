@@ -24,11 +24,26 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            isDebuggable = false
+        }
+        create("benchmark") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("release")
+            isDebuggable = false
+            isMinifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+                "benchmark-rules.pro"
+            )
+            manifestPlaceholders["enableCrashlytics"] = "false"
+            isShrinkResources = true
         }
     }
     
@@ -43,6 +58,7 @@ android {
     
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     
     composeOptions {
@@ -101,6 +117,8 @@ dependencies {
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.coroutines.test)
     testImplementation(libs.turbine)
+
+    implementation(libs.androidx.startup)
 }
 
 kapt {
