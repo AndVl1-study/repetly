@@ -568,6 +568,90 @@
 \item Firebase для аутентификации и облачного хранения
 \end{itemize}
 
+
+\subsection{Интеграция с Firebase}\label{sect:firebase}
+
+Для обеспечения аутентификации пользователей и хранения данных в облаке используется платформа Firebase. Основные компоненты Firebase в приложении:
+
+\begin{itemize}
+\item Firebase Authentication для аутентификации по номеру телефона
+\item Cloud Firestore для хранения данных пользователей и домашних заданий
+\item Firebase Storage для хранения изображений и файлов
+\end{itemize}
+
+Процесс аутентификации реализован через Firebase Phone Authentication, что позволяет обеспечить безопасную верификацию пользователей по номеру телефона. Реализация представлена в листинге~\ref{lst:firebase-auth}.
+
+\begin{listing}[!htb]
+\caption{Реализация аутентификации через Firebase}
+\vspace{-0.3cm}
+\label{lst:firebase-auth}
+\begin{minted}[frame=single,fontsize = \footnotesize, linenos, xleftmargin = 1.5em,breaklines]{kotlin}
+class FirebaseAuthRepository @Inject constructor(
+    private val auth: FirebaseAuth,
+    private val db: FirebaseFirestore,
+    private val userDao: UserDao,
+    private val context: MainActivity
+) : AuthRepository {
+    override suspend fun authenticate(phone: String) {
+        val options = PhoneAuthOptions.newBuilder(auth)
+            .setPhoneNumber(phone)
+            .setTimeout(120L, TimeUnit.SECONDS)
+            .setCallbacks(authCallbacks)
+            .build()
+        PhoneAuthProvider.verifyPhoneNumber(options)
+    }
+
+    override suspend fun register(user: UserData) = withContext(Dispatchers.IO) {
+        val currentUid = auth.currentUser?.uid
+        val userData = user.copy(
+            phoneNumber = auth.currentUser?.phoneNumber ?: "No number found"
+        )
+
+        if (currentUid != null) {
+            // Сохраняем в Firestore
+            db.collection("users").document(currentUid).set(userData).await()
+            // Кэшируем локально
+            userDao.insertUser(userData.toEntity(currentUid))
+        }
+    }
+}
+\end{minted}
+\end{listing}
+
+Для работы с данными реализован гибридный подход с использованием локального кэширования:
+\begin{itemize}
+\item Основные данные хранятся в Cloud Firestore
+\item Часто используемые данные кэшируются локально в Room
+\item Изображения и файлы хранятся в Firebase Storage
+\end{itemize}
+
+Пример работы с данными домашних заданий показан в листинге~\ref{lst:homework-repo}.
+
+\begin{listing}[!htb]
+\caption{Репозиторий для работы с домашними заданиями}
+\vspace{-0.3cm}
+\label{lst:homework-repo}
+\begin{minted}[frame=single,fontsize = \footnotesize, linenos, xleftmargin = 1.5em,breaklines]{kotlin}
+class HomeworkRepositoryImpl @Inject constructor(
+    private val firestoreRepository: FirestoreRepository
+) : HomeworkRepository {
+    override suspend fun getHomework(id: Id): HomeworkItem = withContext(Dispatchers.IO) {
+        val lesson = firestoreRepository.getLesson(id)
+        val images = lesson.homework?.attachments
+            ?.filterIsInstance<Attachment.Image>() ?: emptyList()
+
+        HomeworkItem(
+            title = lesson.subject.name,
+            author = getUser(lesson.tutor.id),
+            description = lesson.homework?.text ?: "",
+            images = images
+        )
+    }
+}
+\end{minted}
+\end{listing}
+
+
 \subsection{Реализация базы данных}\label{sect:database}
 
 Для работы с локальными данными используется Room. Архитектура базы данных построена с учетом необходимости кэширования и периодической очистки устаревших данных. Основные операции с базой данных реализованы через Data Access Object (DAO), пример которого показан в листинге~\ref{lst:user-dao}.
